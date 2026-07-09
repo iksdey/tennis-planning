@@ -2,10 +2,114 @@ import holidays
 import pandas as pd
 
 
+DATE_FORMAT_FR = "%d/%m/%Y"
+TYPE_CLASSIQUE = "classique"
+TYPE_TMC = "TMC"
+
 JOURS_FERIES_FRANCE = holidays.country_holidays(
     "FR",
     observed=False,
 )
+
+
+def parse_date_fr(date_value):
+    if date_value is None:
+        return pd.NaT
+
+    if isinstance(date_value, str):
+        date_value = date_value.strip()
+        if not date_value:
+            return pd.NaT
+
+        return pd.to_datetime(date_value, format=DATE_FORMAT_FR)
+
+    if pd.isna(date_value):
+        return pd.NaT
+
+    return pd.to_datetime(date_value)
+
+
+def est_tmc(type_tournoi):
+    return str(type_tournoi).strip().upper() == TYPE_TMC
+
+
+def est_classique(type_tournoi):
+    return str(type_tournoi).strip().lower() == TYPE_CLASSIQUE
+
+
+def couleur_barre_tournoi(
+    type_tournoi,
+    couleur_classique,
+    couleur_tmc,
+):
+    if est_tmc(type_tournoi):
+        return couleur_tmc
+
+    return couleur_classique
+
+
+def tournois_classiques(df):
+    return df[df["type"].apply(est_classique)].copy()
+
+
+def normaliser_dates_tournois(
+    df,
+    colonnes_dates=("debut", "fin", "entree_reelle"),
+):
+    df = df.copy()
+
+    for colonne in colonnes_dates:
+        if colonne in df.columns:
+            df[colonne] = df[colonne].apply(parse_date_fr)
+
+    return df
+
+
+def preparer_tournois(
+    df,
+    classement_joueur,
+    ponderation_jours,
+    couleur_classique,
+    couleur_tmc,
+):
+    df = normaliser_dates_tournois(df)
+
+    df["couleur_barre"] = df["type"].apply(
+        lambda type_tournoi: couleur_barre_tournoi(
+            type_tournoi,
+            couleur_classique,
+            couleur_tmc,
+        )
+    )
+
+    df["tours_avant_entree"] = pd.NA
+    df["debut_participation"] = pd.NaT
+
+    masque_classique = df["type"].apply(est_classique)
+
+    df.loc[masque_classique, "tours_avant_entree"] = df.loc[
+        masque_classique
+    ].apply(
+        lambda row: nombre_tours_avant_entree(
+            row["classement_min"],
+            row["classement_max"],
+            classement_joueur,
+        ),
+        axis=1,
+    )
+
+    df.loc[masque_classique, "debut_participation"] = df.loc[
+        masque_classique
+    ].apply(
+        lambda row: date_entree_ponderee(
+            row["debut"],
+            row["tours_avant_entree"],
+            ponderation_jours,
+        ),
+        axis=1,
+    )
+
+    return df
 
 
 def nombre_tours_avant_entree(
@@ -43,7 +147,7 @@ def date_entree_ponderee(
     nombre_tours,
     ponderation_jours,
 ):
-    date = pd.Timestamp(date_debut_tournoi)
+    date = parse_date_fr(date_debut_tournoi)
     tours_cumules = 0.0
 
     while tours_cumules < nombre_tours:
