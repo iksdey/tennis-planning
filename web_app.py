@@ -52,15 +52,17 @@ PARTICIPATION_COLOR = "royalblue"
 DATE_FORMAT = "%d/%m"
 
 TEXT_COLOR = "white"
+ANNOTATION_FONT_SIZE = 15
+AXIS_FONT_SIZE = 18
+BAR_WIDTH = 0.95
+MIN_CHART_HEIGHT = 450
+CHART_ROW_HEIGHT = 125
 
 HOVER_DATA = {
     "debut": False,
     "fin": False,
     "club": False,
     "entree_reelle": True,
-    "classement_min": True,
-    "classement_max": True,
-    "tours_avant_entree": False,
 }
 
 
@@ -85,7 +87,10 @@ def build_chart(tournois):
         hover_data=HOVER_DATA
     )
 
-    fig.update_traces(marker_color=df["couleur_barre"].tolist())
+    fig.update_traces(
+        marker_color=df["couleur_barre"].tolist(),
+        width=BAR_WIDTH,
+    )
 
     fig_participation = px.timeline(
         df_classiques,
@@ -93,7 +98,12 @@ def build_chart(tournois):
         x_end="fin",
         y="club",
     )
-    fig_participation.update_traces(marker_color=PARTICIPATION_COLOR)
+    fig_participation.update_traces(
+        marker_color=PARTICIPATION_COLOR,
+        width=BAR_WIDTH,
+        hoverinfo="skip",
+        hovertemplate=None,
+    )
 
     fig.add_traces(fig_participation.data)
 
@@ -112,8 +122,8 @@ def build_chart(tournois):
                 x1=row["entree_reelle"],
                 y0=row["club"],
                 y1=row["club"],
-                y0shift=-0.35,
-                y1shift=0.35,
+                y0shift=-BAR_WIDTH / 2,
+                y1shift=BAR_WIDTH / 2,
                 xref="x",
                 yref="y",
                 line={"color": "red", "width": 3},
@@ -125,8 +135,10 @@ def build_chart(tournois):
             text=f"{debut_label} -> {fin_label}" if est_tmc else debut_label,
             showarrow=False,
             xanchor="center" if est_tmc else "left",
+            yanchor="middle" if est_tmc else None,
+            yshift=-16 if est_tmc else 0,
             align="center" if est_tmc else None,
-            font={"color": TEXT_COLOR},
+            font={"color": TEXT_COLOR, "size": ANNOTATION_FONT_SIZE},
             bgcolor="black" if est_tmc else None,
         )
 
@@ -137,7 +149,7 @@ def build_chart(tournois):
                 text=fin_label,
                 showarrow=False,
                 xanchor="right",
-                font={"color": TEXT_COLOR},
+                font={"color": TEXT_COLOR, "size": ANNOTATION_FONT_SIZE},
             )
 
         if planning.est_classique(row["type"]) and pd.notna(row["debut_participation"]):
@@ -147,7 +159,7 @@ def build_chart(tournois):
                 text=pd.to_datetime(row["debut_participation"]).strftime(DATE_FORMAT),
                 showarrow=False,
                 xanchor="left",
-                font={"color": TEXT_COLOR},
+                font={"color": TEXT_COLOR, "size": ANNOTATION_FONT_SIZE},
             )
 
         if pd.notna(classement_min) and pd.notna(classement_max):
@@ -157,13 +169,22 @@ def build_chart(tournois):
                 text=f"{classement_min} -> {classement_max}",
                 showarrow=False,
                 xanchor="center",
-                yanchor="top",
-                yshift=32,
-                font={"color": TEXT_COLOR},
+                yanchor="middle" if est_tmc else "top",
+                yshift=16 if est_tmc else 42,
+                font={"color": TEXT_COLOR, "size": ANNOTATION_FONT_SIZE},
                 bgcolor="black",
             )
 
-    fig.update_yaxes(autorange="reversed")
+    fig.update_xaxes(tickfont={"size": AXIS_FONT_SIZE})
+    fig.update_yaxes(
+        autorange="reversed",
+        tickfont={"size": AXIS_FONT_SIZE},
+    )
+    fig.update_layout(
+        font={"size": AXIS_FONT_SIZE},
+        hoverlabel={"font_size": AXIS_FONT_SIZE},
+        height=max(MIN_CHART_HEIGHT, CHART_ROW_HEIGHT * len(df)),
+    )
 
     return fig, df
 
