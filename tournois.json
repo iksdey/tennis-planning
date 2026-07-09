@@ -4,7 +4,7 @@
     "type": "classique",
     "debut": "04/07/2026",
     "fin": "18/07/2026",
-    "entree_reelle" : "12/07/2026",
+    "entree_reelle": "12/07/2026",
     "classement_min": "NC",
     "classement_max": "15/1"
   },
@@ -13,15 +13,16 @@
     "type": "TMC",
     "debut": "20/07/2026",
     "fin": "21/07/2026",
+    "entree_reelle": "",
     "classement_min": "15/4",
     "classement_max": "15/1"
   },
   {
     "club": "Bourg-la-Reine",
+    "type": "classique",
     "debut": "24/07/2026",
     "fin": "15/08/2026",
-    "type": "classique",
-    "entree_reelle" : "",
+    "entree_reelle": "",
     "classement_min": "NC",
     "classement_max": "4/6"
   }
