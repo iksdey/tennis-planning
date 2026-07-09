@@ -76,6 +76,9 @@ def build_chart(tournois):
         TOURNAMENT_COLOR,
         TMC_COLOR,
     )
+    df["entree_reelle_hover"] = df["entree_reelle"].apply(
+        lambda date: "" if pd.isna(date) else pd.to_datetime(date).strftime("%d/%m/%Y")
+    )
 
     df_classiques = planning.tournois_classiques(df)
 
@@ -90,6 +93,13 @@ def build_chart(tournois):
     fig.update_traces(
         marker_color=df["couleur_barre"].tolist(),
         width=BAR_WIDTH,
+        customdata=df[["entree_reelle_hover"]].to_numpy(),
+        hovertemplate=[
+            ""
+            if planning.est_tmc(row["type"]) or not row["entree_reelle_hover"]
+            else "Entrée réelle : %{customdata[0]}<extra></extra>"
+            for _, row in df.iterrows()
+        ],
     )
 
     fig_participation = px.timeline(
