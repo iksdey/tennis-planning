@@ -1,0 +1,18 @@
+[
+  {
+    "club": "Plessis Trevise",
+    "debut": "2025-06-30",
+    "fin": "2025-07-16",
+    "entree_reelle" : "2025-07-06",
+    "classement_min": "NC",
+    "classement_max": "15/1"
+  },
+  {
+  "club": "Villecresnes",
+  "debut": "2025-07-11",
+  "fin": "2025-07-27",
+  "entree_reelle" : "2025-07-18",
+  "classement_min": "NC",
+  "classement_max": "-15"
+  }
+]
