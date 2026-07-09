@@ -9,7 +9,7 @@ import planning
 
 
 st.set_page_config(
-    page_title="Road to -15",
+    page_title="Planning tennis",
     layout="wide",
 )
 
@@ -279,7 +279,7 @@ def save_tournois(tournois):
         fichier_tournois.write("\n")
 
 
-st.title("Planning tournois tennis")
+st.title("Road to -15")
 
 if "tournois" not in st.session_state:
     st.session_state.tournois = load_tournois()
